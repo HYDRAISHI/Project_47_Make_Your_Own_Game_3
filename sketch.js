@@ -26,15 +26,19 @@ var bossHealth = 150;
 var test = true;
 var zombie_1, zombie_2, zombie_3;
 var enemy_1, enemy_2;
-var enemyGroup_, zombieGroup_;
+var enemy_Group, zombie_Group;
 var zombie_, enemy_;
 var zombieHealth_, enemyHealth_;
 var player_running_2;
+var a = false;
+var congo;
 function preload(){
 	player_running = loadAnimation("images/walk.png", "images/idle.png");
 	player_dead = loadImage("images/hurt.png");
 
-	player_running_2 = loadAnimation("images/walk 2.png", "images/idle 2.png");
+	player_running_2 = loadAnimation("images/walk_2.png" ,"images/idle_2.png");
+
+	congo = loadSound("sounds/congrats.mp3");
 
 	bg1 = loadImage("images/bg1.jpg");
 	bg2 = loadImage("images/bg2.jpg");
@@ -66,18 +70,18 @@ function preload(){
 }
 
 function setup(){
-	createCanvas(800, 400);
+	createCanvas(displayWidth, displayHeight);
 
 
 	engine = Engine.create();
 	world = engine.world;
 
-	player = createSprite(50,180,20,50);
+	player = createSprite(displayWidth/20 ,displayHeight/1.1,20,50);
   
  	player.addAnimation("running", player_running);
   	player.scale = 0.5;
 
-	invisibleGround = createSprite(400,390,800,10);
+	invisibleGround = createSprite(displayWidth/2,displayHeight - 10,displayWidth,10);
 	invisibleGround.visible = false;
 
 	enemyGroup = createGroup();
@@ -85,8 +89,8 @@ function setup(){
 	bulletGroup = createGroup();
 	bossGroup = createGroup();
 
-	enemyGroup_ = createGroup();
-	zombieGroup_ = createGroup();
+	enemy_Group = createGroup();
+	zombie_Group = createGroup();
 
 	Engine.run(engine);
 
@@ -99,7 +103,7 @@ function setup(){
 	enemyHealth_ = 100;
 
 	button = createButton('LETS START');
-	button.position(700,360)
+	button.position(displayWidth/2,displayHeight/2)
 	button.size(100,40);
 
 	xp = 1;
@@ -119,7 +123,7 @@ function draw() {
 	fill("white");
 	textAlign(CENTER);
 	textFont("Minecraft Ten")
-	text("Welcome to THE APOCALYPSE",400, 100);
+	text("Welcome to THE APOCALYPSE",displayWidth/2, displayHeight/10);
 	button.mousePressed(()=>{
 		gameState = 1
 	})
@@ -145,13 +149,26 @@ if(gameState == 2){
 	enemyGroup.setVelocityEach(0,0);
 }
 
+if(gameState == 4){
+		congo.play();
+		background("cyan")
+		fill("white");
+		textAlign(CENTER);
+		textFont("Minecraft Ten")
+		textSize(25);
+		text("CONGRATULATIONS YOU HAVE COMPLETED THE GAME", displayWidth/2, displayHeight/2);
+		player.visible = false;
+		zombie_Group.setVisibleEach(false);
+		enemy_Group.setVisibleEach(false);
+}
+
   
   drawSprites();
  
 }
 function spawnZom(){
 	if(frameCount % 77 === 0) {
-		zombie_ = createSprite(900,355,10,40);
+		zombie_ = createSprite(displayWidth + 100,displayHeight/1.05,10,40);
 		zombie_.velocityX = -6;
 		var rand = Math.round(random(1,2));
 		switch(rand) {
@@ -163,7 +180,7 @@ function spawnZom(){
 		}
 
 		if(rand == 1){
-			zombie_.x = 900;
+			zombie_.x = displayWidth + 100;
 			zombie_.scale = 0.7;
 		}
 		else{
@@ -172,13 +189,13 @@ function spawnZom(){
 			zombie_.scale = 0.4;
 		}
 		
-		zombieGroup_.add(zombie_);
+		zombie_Group.add(zombie_);
 	  }
 }
 
 function spawnEnem(){
 	if(frameCount % 180 === 0) {
-		enemy_ = createSprite(900,355,10,40);
+		enemy_ = createSprite(displayWidth + 100,displayHeight/1.05,10,40);
 		enemy_.velocityX = -6;
 		var rand = Math.round(random(1,2));
 		switch(rand) {
@@ -190,7 +207,7 @@ function spawnEnem(){
 		}
 
 		if(rand == 1){
-			enemy_.x = 900;
+			enemy_.x = displayWidth + 100;
 			enemy_.scale = 0.5;
 		}
 		else{
@@ -199,14 +216,14 @@ function spawnEnem(){
 			enemy_.scale = 0.5;
 		}
 		
-		enemyGroup_.add(enemy_);
+		enemy_Group.add(enemy_);
 	  }	
 }
 
 
 function spawnZombies() {
 	if(frameCount % 77 === 0) {
-	  zombie = createSprite(900,355,10,40);
+	  zombie = createSprite(displayWidth + 100,displayHeight/1.05,10,40);
 	  zombie.velocityX = -6;
 	  
 	  var rand = Math.round(random(1,3));
@@ -228,7 +245,7 @@ function spawnZombies() {
 
 function spawnEnemies() {
 	if(frameCount % 180 === 0) {
-		enemy = createSprite(1000,355,10,40);
+		enemy = createSprite(displayWidth + 200,displayHeight/1.05,10,40);
 	  enemy.velocityX = -6;
 	  
 	  var rand = Math.round(random(1,2));
@@ -247,7 +264,7 @@ function spawnEnemies() {
 
 function spawnBoss(){
 	
-	boss = createSprite(800,355,10,40);
+	boss = createSprite(displayWidth,displayHeight/1.05,10,40);
 	boss.velocityX = -3;  
 	boss.addImage("boss",bossImg);
 	boss.scale = 0.5;
@@ -267,7 +284,7 @@ function shootBullets(){
 
 function play(){
 	background(bg1);
-	if(keyDown("space") && player.y >= 309) {
+	if(keyDown("space") && player.y >= player.y - 100) {
 		player.velocityY = -12;
 	  }
 	
@@ -275,9 +292,10 @@ function play(){
 	
 	  player.collide(invisibleGround);
 	  player.visible = true;
-	  if(keyDown(UP_ARROW)){
+	  if(keyDown(RIGHT_ARROW)){
 		shootBullets();
 		bullet.velocityX = 19;
+		player.addAnimation("running", player_running);
 	  }
 	  spawnZombies();
 	  spawnEnemies();
@@ -291,6 +309,7 @@ function play(){
 		
 	}
 
+	console.log(level);
 	if(level == 2  ){
 		
 		zombieGroup.setVelocityEach(0,0);
@@ -353,7 +372,6 @@ function play(){
 		bossHealth = 1;
 		level = 3;
 		health = 200;
-		damage += 20;
 
 	}
 	
@@ -371,52 +389,76 @@ function play(){
 	}
 
 	if(level == 3){
-		player.x = 400;
-		
+		background(bg5)
+		fill("white");
+	textAlign(CENTER);
+	textFont("Minecraft Ten")
+	textSize(25);
+  	text("Experience : "  + xp, 650, 50);
+	text("Health " + health, 100, 50);
+		player.x = displayWidth/2;
+		damage = 50;
 		spawnZom();
 		spawnEnem();
+		zombieGroup.setVisibleEach(false);
+		enemyGroup.setVisibleEach(false);
 		zombieGroup.setVelocityEach(0,0);
 		enemyGroup.setVelocityEach(0,0);
+		fill("white");
+		textAlign(CENTER);
+		textFont("Minecraft Ten")
+		textSize(25);
+		fill("Black");
+		text("Congratulations You have passed the Boss level", displayWidth/2, displayHeight/3);
+		text(" Now reach EXP 350 to win the game", displayWidth/2, displayHeight/2);
 		
-		if(bulletGroup.isTouching(zombieGroup_)){
+		if(bulletGroup.isTouching(zombie_Group)){
 			bulletGroup.destroyEach();
 			zombieHealth_ -= damage;
 		}
 		
-		if(bulletGroup.isTouching(zombieGroup_)){
+		if(bulletGroup.isTouching(enemy_Group)){
 			bulletGroup.destroyEach();
-			zombieHealth_ -= damage;
+			enemyHealth_ -= damage;
 		}
 		
 		
-		if(zombieGroup_.isTouching(player) && frameCount && 40 == 0){
-			
+		if(zombie_Group.isTouching(player) && frameCount % 5 == 0){
 			health -= 10;
 		}
 		
-		if(enemyGroup_.isTouching(player) && frameCount && 40 == 0){
+		if(player.isTouching(enemy_Group) && frameCount % 5 == 0){
 			health -= 15;
 		}
 		
 		if(zombieHealth_ == 0){
-			zombieGroup_.destroyEach();
+			zombie_Group.destroyEach();
 			xp += 50;
-			zombieHealth_ = 200;
+			zombieHealth_ = 100;
 		}
-		
 		  if(enemyHealth_ == 0){
-			enemyGroup_.destroyEach();
+			enemy_Group.destroyEach();
 			xp += 10;
-			enemyHealth_ = 200;
+			enemyHealth_ = 100;
+		}
+		console.log(enemyHealth_);
+
+		
+
+		if(keyIsDown(LEFT_ARROW)){
+			player.addAnimation("running",player_running_2);
+			shootBullets();
+			bullet.velocityX = -19;
 		}
 			
-		if(keyCode == 37){
-			player.addAnimation("playerrun", player_running_2);
-		}
-		else{
-			player.addAnimation("runn", player_running);
-		}
+		
 	}
+
+	if(xp >= 351){
+		gameState = 4;
+		
+	}
+
 
 	console.log(xp)
 }
@@ -429,8 +471,8 @@ function end(){
 	fill("black");
 	textAlign(CENTER);
 	textFont("Minecraft Ten")
-	text("The End",400, 200);
+	text("The End",displayWidth/2, displayHeight/2);
 	textSize(25);
-	text("You Died", 400, 300)
+	text("You Died", displayWidth/2, displayHeight - 100)
 }
 
